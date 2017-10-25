@@ -4,7 +4,8 @@
 
 import socket
 import threading
-from net.udpd import *
+from net.udp.data import *
+
 
 class UDPC(object):
 	
@@ -45,29 +46,23 @@ class UDPC(object):
 		while True:
 			# 拆包问题
 			data, addr = self.__socket.recvfrom(self.__recvBuffLen)
-			data = data.decode("utf-8")
-			ptl = 0
-			if data.find(":") > 0:
-				ptl, data = data.split(":", 1)
-			else:
-				ptl = 1
-				print("data invalid")
-			print("[recv]%s,%s" % (data, addr))
-			self.__queueRecv.put(AddrData(addr, int(ptl),data))
+			addrData = AddrData()
+			addrData.toData(data)
+			# print("[recv][%s:%s][%s]%s" % (*addr, addrData.ptl, addrData.data))
+			self.__queueRecv.put(AddrData(addr, addrData.ptl, addrData.data))
 		print("finish revcing msg")
 
 	def __send(self):
 		print("begin sending msg")
 		while True:
 			addrData = self.__queueSend.get()
-			data = "%s:%s" % (addrData.ptl, addrData.data)
-			print("[send][%s:%s]%s" % (*self.__addr, data))
-			self.__socket.sendto(data.encode("utf-8"), self.__addr)
+			# print("[send][%s:%s][%s]%s" % (*self.__addr, addrData.ptl, addrData.data))
+			self.__socket.sendto(addrData.toBytes(), self.__addr)
 		print("finish sending msg")
 
 	def __port_is_free(self, port):
 		# logger.debug('check port %d is free', port)
-		print('check port %d is free' % port)
+		# print('check port %d is free' % port)
 		s = socket.socket()
 		s.settimeout(0.5)
 		try:

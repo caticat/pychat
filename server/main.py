@@ -5,12 +5,11 @@
 import sys
 sys.path.append("..")
 import queue
-from net.udps import UDPS
-from net.msg import MessageManager
+from net.udp.server import UDPS
+from net.udp.message import MessageManager
 
 def hello(sock, data):
-	print("hello!")
-	msgMgr.send(1, ("hello, %s" % data).encode("utf-8"), sock)
+	msgMgr.send(1, ("hello, %s" % data), sock)
 
 if __name__ == "__main__":
 	print("begin")

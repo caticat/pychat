@@ -3,7 +3,7 @@
 "msg manager"
 
 import threading
-from net.udpd import *
+from net.udp.data import *
 
 class MessageManager(object):
 	
@@ -29,10 +29,10 @@ class MessageManager(object):
 	def __recv(self):
 		while True:
 			addrData = self.__queueRecv.get()
-			if addrData.ptl in self.__protocol: # TODO:PAN 这个是根据msg解析出来的
+			if addrData.ptl in self.__protocol:
 				self.__protocol[addrData.ptl](addrData.addr, addrData.data)
 			else:
-				print("no ptl[%s]" % addrData.ptl)
+				print("[ERROR]no ptl[%s]" % addrData.ptl)
 
 	def send(self, ptl, msg, addr = ""):
 		self.__queueSend.put(AddrData(addr, ptl, msg))

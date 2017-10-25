@@ -5,11 +5,12 @@
 import sys
 sys.path.append("..")
 import queue
-from net.udpc import UDPC
-from net.msg import MessageManager
+from net.udp.client import UDPC
+from net.udp.message import MessageManager
+import time
 
 def hello(sock, data):
-	print("hello:%s,%s" % (sock, data))
+	print("[hello]%s" % data)
 
 if __name__ == "__main__":
 	print("begin")
@@ -25,7 +26,9 @@ if __name__ == "__main__":
 
 	# 逻辑
 	msgMgr.send(1, "world")
+	time.sleep(1)
 	msgMgr.send(1, "pan")
+	time.sleep(1)
 	msgMgr.send(1, "aaa")
 
 	udpc.join()

@@ -4,13 +4,13 @@
 
 import socket
 import threading
-from net.udpd import *
+from net.udp.data import *
 
 class UDPS(object):
 	
 	"""UDP Server"""
 	
-	def __init__(self, port, queueRecv, queueSend, recvBuffLen=1024):
+	def __init__(self, port, queueRecv, queueSend, recvBuffLen=MSG_MAX_LEN):
 		# param
 		self.__port = port
 		self.__queueRecv = queueRecv
@@ -36,25 +36,18 @@ class UDPS(object):
 	def __recv(self):
 		print("begin revcing msg")
 		while True:
-			# TODO:PAN 拆包问题
-			data, addr = self.__socket.recvfrom(self.__recvBuffLen)
-			data = data.decode("utf-8")
-			ptl = 0
-			if data.find(":") > 0:
-				ptl, data = data.split(":", 1)
-			else:
-				ptl = 1
-				print("data invalid")
-			print("[recv][%s][%s]%s" % (addr, ptl, data))
-			self.__queueRecv.put(AddrData(addr, int(ptl), data))
+			data, addr = self.__socket.recvfrom(self.__recvBuffLen) # UDP没有粘包问题
+			addrData = AddrData(addr)
+			addrData.toData(data)
+			# print("[recv][%s:%s][%s]%s" % (*addr, addrData.ptl, addrData.data))
+			self.__queueRecv.put(addrData)
 		print("finish revcing msg")
 
 	def __send(self):
 		print("begin sending msg")
 		while True:
 			addrData = self.__queueSend.get()
-			print("[send][%s][%s]%s" % (addrData.addr, addrData.ptl, addrData.data))
-			data = "%s:%s" % (addrData.ptl, addrData.data)
-			self.__socket.sendto(data.encode("utf-8"), addrData.addr)
+			# print("[send][%s:%s][%s]%s" % (*addrData.addr, addrData.ptl, addrData.data))
+			self.__socket.sendto(addrData.toBytes(), addrData.addr)
 		print("finish sending msg")
 
