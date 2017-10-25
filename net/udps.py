@@ -36,17 +36,25 @@ class UDPS(object):
 	def __recv(self):
 		print("begin revcing msg")
 		while True:
-			# 拆包问题
+			# TODO:PAN 拆包问题
 			data, addr = self.__socket.recvfrom(self.__recvBuffLen)
-			print("[recv][%s]%s" % (addr, data))
-			self.__queueRecv.put(AddrData(addr, data))
+			data = data.decode("utf-8")
+			ptl = 0
+			if data.find(":") > 0:
+				ptl, data = data.split(":", 1)
+			else:
+				ptl = 1
+				print("data invalid")
+			print("[recv][%s][%s]%s" % (addr, ptl, data))
+			self.__queueRecv.put(AddrData(addr, int(ptl), data))
 		print("finish revcing msg")
 
 	def __send(self):
 		print("begin sending msg")
 		while True:
 			addrData = self.__queueSend.get()
-			print("[send][%s]%s" % (addrData.addr, addrData.data))
-			self.__socket.sendto(addrData.data, addrData.addr)
+			print("[send][%s][%s]%s" % (addrData.addr, addrData.ptl, addrData.data))
+			data = "%s:%s" % (addrData.ptl, addrData.data)
+			self.__socket.sendto(data.encode("utf-8"), addrData.addr)
 		print("finish sending msg")
 

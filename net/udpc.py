@@ -4,15 +4,16 @@
 
 import socket
 import threading
+from net.udpd import *
 
 class UDPC(object):
 	
 	"""UDP Client"""
 
-	def __init__(self, ip, port, portBind, queueRecv, queueSend, recvBuffLen=1024):
+	def __init__(self, ip, port, queueRecv, queueSend, portBind = 10000, recvBuffLen=1024):
 		# param
 		self.__addr = (ip, port)
-		self.__addrBind = (ip, portBind)
+		self.__addrBind = [ip, portBind]
 		self.__queueRecv = queueRecv
 		self.__queueSend = queueSend
 		self.__recvBuffLen = recvBuffLen
@@ -25,7 +26,13 @@ class UDPC(object):
 		self.__threadSend = threading.Thread(target=self.__send)
 
 	def start(self):
-		self.__socket.bind(self.__addrBind)
+		for port in range(self.__addrBind[1], 65535):
+			if port == self.__addr[1]:
+				continue
+			if self.__port_is_free(port):
+				self.__addrBind[1] = port
+				break
+		self.__socket.bind(tuple(self.__addrBind))
 		self.__threadRecv.start()
 		self.__threadSend.start()
 
@@ -38,15 +45,34 @@ class UDPC(object):
 		while True:
 			# 拆包问题
 			data, addr = self.__socket.recvfrom(self.__recvBuffLen)
+			data = data.decode("utf-8")
+			ptl = 0
+			if data.find(":") > 0:
+				ptl, data = data.split(":", 1)
+			else:
+				ptl = 1
+				print("data invalid")
 			print("[recv]%s,%s" % (data, addr))
-			self.__queueRecv.put(data)
+			self.__queueRecv.put(AddrData(addr, int(ptl),data))
 		print("finish revcing msg")
 
 	def __send(self):
 		print("begin sending msg")
 		while True:
-			data = self.__queueSend.get()
+			addrData = self.__queueSend.get()
+			data = "%s:%s" % (addrData.ptl, addrData.data)
 			print("[send][%s:%s]%s" % (*self.__addr, data))
 			self.__socket.sendto(data.encode("utf-8"), self.__addr)
 		print("finish sending msg")
+
+	def __port_is_free(self, port):
+		# logger.debug('check port %d is free', port)
+		print('check port %d is free' % port)
+		s = socket.socket()
+		s.settimeout(0.5)
+		try:
+			#s.connect_ex return 0 means port is open
+			return s.connect_ex(('localhost', port)) != 0
+		finally:
+			s.close()
 
