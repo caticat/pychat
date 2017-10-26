@@ -11,6 +11,9 @@ from net.udp.message import MessageManager
 def hello(sock, data):
 	msgMgr.send(1, ("hello, %s" % data), sock)
 
+def test(sock, data):
+	msgMgr.send(2, ("test, %s" % data), sock)
+
 if __name__ == "__main__":
 	print("begin")
 
@@ -25,10 +28,15 @@ if __name__ == "__main__":
 	# 消息
 	msgMgr = MessageManager(queueRecv, queueSend)
 	msgMgr.regist(1, hello)
+	msgMgr.regist(2, test)
 	msgMgr.start()
 
 	# 逻辑
 	pass
+
+	# 停止
+	# msgMgr.stop()
+	# udps.stop()
 
 	# 结束
 	msgMgr.join()

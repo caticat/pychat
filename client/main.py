@@ -12,6 +12,9 @@ import time
 def hello(sock, data):
 	print("[hello]%s" % data)
 
+def test(sock, data):
+	print("[test]%s" % data)
+
 if __name__ == "__main__":
 	print("begin")
 	queueRecv = queue.Queue()
@@ -22,14 +25,22 @@ if __name__ == "__main__":
 	# 消息
 	msgMgr = MessageManager(queueRecv, queueSend)
 	msgMgr.regist(1, hello)
+	msgMgr.regist(2, test)
 	msgMgr.start()
 
 	# 逻辑
 	msgMgr.send(1, "world")
-	time.sleep(1)
+	time.sleep(0.1)
 	msgMgr.send(1, "pan")
-	time.sleep(1)
+	time.sleep(0.1)
 	msgMgr.send(1, "aaa")
+	time.sleep(0.1)
+	msgMgr.send(2, "222")
+	time.sleep(0.1)
 
+	msgMgr.stop()
+	udpc.stop()
+
+	msgMgr.join()
 	udpc.join()
 	print("end")

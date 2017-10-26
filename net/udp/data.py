@@ -5,14 +5,14 @@
 from net.udp.const import *
 
 def int_to_bytes(x):
-    return x.to_bytes((x.bit_length() + 7) // 8, 'big')
+    return x.to_bytes((x.bit_length() + 7) // 8, 'big', signed=True)
 
 def int_from_bytes(xbytes):
-    return int.from_bytes(xbytes, 'big')
+    return int.from_bytes(xbytes, 'big', signed=True)
 
 # 增加长度参数
 def int_to_bytes_len(x, lenth):
-    return x.to_bytes((lenth + 7) // 8, 'big')
+    return x.to_bytes((lenth + 7) // 8, 'big', signed=True)
 
 class AddrData(object):
 	def __init__(self, addr = (), ptl = 0, data = ""):
